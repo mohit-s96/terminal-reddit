@@ -26,20 +26,48 @@ module.exports = function (url, options_) {
       };
 
       const callback = function (response) {
-        var str = "";
-        response.on("data", function (chunk) {
-          str += chunk;
-        });
+        // console.log(response.statusCode);
+        // console.log(response.headers);
+        if (response.statusCode === 301) {
+          const {
+            path: rdrPath,
+            host: rdrHost,
+            isHttps: rdrIsHttps,
+          } = parseurl(response.headers.location);
 
-        response.on("end", function () {
-          resolve(str);
-        });
+          const rdrPort = rdrIsHttps ? 443 : 80;
 
-        response.on("error", (err) => {
-          reject(err);
-        });
+          const rdrMethod = rdrIsHttps ? https : http;
+
+          let rdrOptions = {
+            host: rdrHost,
+            port: rdrPort,
+            method: options.method,
+            path: rdrPath,
+          };
+
+          const req = rdrMethod.request(rdrOptions, callback);
+          req.on("error", (err) => reject(err));
+          req.end();
+        } else {
+          var str = "";
+          response.on("data", function (chunk) {
+            str += chunk;
+          });
+
+          response.on("end", function () {
+            // console.log("buffer check => ", Buffer.byteLength(str));
+            console.timeEnd("label");
+            debugger;
+            resolve(str);
+          });
+
+          response.on("error", (err) => {
+            reject(err);
+          });
+        }
       };
-
+      console.time("label");
       const req = method.request(options, callback);
       req.on("error", (err) => reject(err));
       req.end();

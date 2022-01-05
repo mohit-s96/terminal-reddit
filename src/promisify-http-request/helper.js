@@ -26,11 +26,7 @@ function trimPrefix(uri) {
     temp = uri;
   }
   if (temp) {
-    if (temp.startsWith("www")) {
-      return temp.slice(4);
-    } else {
-      return temp;
-    }
+    return temp;
   } else {
     return uri;
   }
@@ -44,7 +40,7 @@ exports.parseurl = function (url) {
 
   const [host, path] = extractHost(trimPrefix(url));
 
-  result.host = "www." + host;
+  result.host = host;
   result.path = path;
 
   return result;
